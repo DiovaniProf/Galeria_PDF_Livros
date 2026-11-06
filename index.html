@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071427">
+  <meta name="description" content="Biblioteca Digital Imersiva: transforme PDFs em livros folheáveis e organize sua galeria com capas personalizadas.">
+  <title>Biblioteca Digital Imersiva | Livros folheáveis</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="site-bg" aria-hidden="true"></div>
+  <div id="app" class="shell">
+    <header class="topbar">
+      <a class="brand" href="#biblioteca" aria-label="Biblioteca Digital, página inicial"><span class="brand-mark">◈</span><span>BIBLIOTECA <b>DIGITAL</b><small>IMERSIVA · VERSÃO 1.0</small></span></a>
+      <nav class="topnav" aria-label="Navegação principal">
+        <button class="nav-btn active" data-view="biblioteca">⌂ <span>Biblioteca</span></button>
+        <button class="nav-btn" data-view="gerador">✦ <span>Gerar livro</span></button>
+      </nav>
+      <button id="headerAdd" class="btn btn-primary head-add">＋ Novo livro</button>
+    </header>
+
+    <main>
+      <section id="view-biblioteca" class="view active" aria-label="Galeria de livros">
+        <div class="hero">
+          <div class="hero-content">
+            <div class="eyebrow">✧ ACERVO DIGITAL INTERATIVO</div>
+            <h1>O conhecimento ganha<br><em>novas páginas.</em></h1>
+            <p>Crie sua biblioteca, escolha capas personalizadas e transforme documentos PDF em uma experiência de leitura folheável.</p>
+            <div class="hero-actions"><button class="btn btn-primary" id="heroAdd">＋ Adicionar livro</button><a href="#acervo" class="btn btn-outline">Explorar acervo ↓</a></div>
+          </div>
+          <div class="hero-art" aria-hidden="true"><div class="art-halo"></div><div class="decor-book"><div class="decor-spine"></div><span>DIÁLOGOS<br>DO<br>CONHECIMENTO</span><i>✦</i></div><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div></div>
+        </div>
+
+        <section class="library-area" id="acervo">
+          <div class="section-top"><div><div class="eyebrow">SUA COLEÇÃO</div><h2>Galeria de livros <span id="bookCount" class="count">0</span></h2></div><button class="btn btn-subtle" id="addFromGallery">＋ Cadastrar livro</button></div>
+          <div class="filters"><label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Pesquisar por título, autor ou descrição..." autocomplete="off" aria-label="Pesquisar livros"></label><select id="categoryFilter" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select><select id="sortFilter" aria-label="Ordenar livros"><option value="recent">Mais recentes</option><option value="title">Título A–Z</option><option value="oldest">Mais antigos</option></select></div>
+          <div id="gallery" class="gallery" aria-live="polite"></div>
+          <div id="emptyState" class="empty-state" hidden><div class="empty-icon">▤</div><h3>Nenhum livro encontrado</h3><p id="emptyText">Cadastre seu primeiro PDF e escolha uma capa para iniciar sua biblioteca.</p><button class="btn btn-primary" id="emptyAdd">＋ Criar primeiro livro</button></div>
+        </section>
+      </section>
+
+      <section id="view-gerador" class="view" aria-label="Cadastro e geração de livros">
+        <div class="view-heading"><div><div class="eyebrow">ESTÚDIO DE PUBLICAÇÃO</div><h1>Gerador de <em>livros digitais</em></h1><p>Selecione o PDF, personalize a capa e publique na sua galeria. O documento original permanece intacto.</p></div><button id="backToGallery" class="btn btn-outline">← Voltar à galeria</button></div>
+        <div class="studio-grid">
+          <form id="bookForm" class="panel form-panel">
+            <div class="panel-heading"><span class="step">01</span><div><h2>Informações do livro</h2><p>Identificação e organização do material</p></div></div>
+            <div class="field"><label for="titleInput">Título do livro <strong>*</strong></label><input id="titleInput" maxlength="120" placeholder="Ex.: Introdução à Filosofia" required></div>
+            <div class="field-row"><div class="field"><label for="authorInput">Autor / responsável</label><input id="authorInput" maxlength="100" placeholder="Nome do autor"></div><div class="field"><label for="categoryInput">Categoria <strong>*</strong></label><input id="categoryInput" list="categorySuggestions" maxlength="60" placeholder="Ex.: Filosofia" required><datalist id="categorySuggestions"><option value="Filosofia"><option value="Literatura"><option value="Ciências Humanas"><option value="Linguagens e Códigos"><option value="Matemática"><option value="Ciências da Natureza"><option value="Educação Digital"><option value="Formação Continuada"><option value="Práticas Educacionais"></datalist></div></div>
+            <div class="field"><label for="descriptionInput">Descrição</label><textarea id="descriptionInput" rows="3" maxlength="500" placeholder="Uma apresentação breve do conteúdo"></textarea></div>
+            <div class="panel-heading sub-heading"><span class="step">02</span><div><h2>Arquivos do livro</h2><p>O PDF será interpretado pelo leitor digital</p></div></div>
+            <div class="uploads"><label class="upload-box" id="pdfDrop"><input id="pdfInput" type="file" accept="application/pdf,.pdf"><span class="upload-icon">▤</span><b>Selecionar PDF <strong>*</strong></b><small id="pdfFileLabel">Clique ou arraste seu documento</small><span class="upload-foot">Arquivo .pdf</span></label><label class="upload-box" id="coverDrop"><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp"><span class="upload-icon">▧</span><b>Capa personalizada</b><small id="coverFileLabel">Clique ou arraste uma imagem</small><span class="upload-foot">JPG, PNG ou WebP · opcional</span></label></div>
+            <label class="check-option"><input id="downloadInput" type="checkbox" checked><span>Permitir que o leitor baixe o PDF original</span></label>
+            <div class="form-actions"><button type="button" id="cancelEdit" class="btn btn-outline">Cancelar</button><button type="submit" id="saveBook" class="btn btn-primary">✦ Publicar na biblioteca</button></div>
+            <div class="form-hint">ℹ Esta versão salva os livros neste navegador, usando IndexedDB. Para compartilhar o acervo entre dispositivos, será necessário integrar armazenamento remoto.</div>
+          </form>
+          <aside class="panel preview-panel"><div class="panel-heading"><span class="step">03</span><div><h2>Prévia da publicação</h2><p>Como seu livro aparecerá na galeria</p></div></div><div class="preview-stage"><div id="previewCover" class="preview-cover"><div class="cover-placeholder"><span>✦</span><b>SEU LIVRO</b><small>CAPA PERSONALIZADA</small></div></div></div><div class="preview-meta"><span id="previewCategory">CATEGORIA</span><h3 id="previewTitle">Título do livro</h3><p id="previewAuthor">Autor / responsável</p></div><div class="preview-tip">Dica: para capas elegantes, utilize imagens verticais na proporção 2:3 (por exemplo, 1200 × 1800 px).</div></aside>
+        </div>
+      </section>
+    </main>
+    <footer class="footer"><span>◈ BIBLIOTECA DIGITAL IMERSIVA</span><span>HTML · CSS · JavaScript · PDF.js</span></footer>
+  </div>
+
+  <div id="reader" class="reader" hidden role="dialog" aria-modal="true" aria-label="Leitor interativo">
+    <header class="reader-header"><div class="reader-title"><button id="closeReader" class="icon-btn" title="Voltar à biblioteca" aria-label="Voltar à biblioteca">←</button><div><b id="readerTitle">Livro</b><small id="readerAuthor">Leitor digital</small></div></div><div class="reader-controls"><button id="readerDownload" class="icon-btn" title="Baixar PDF" aria-label="Baixar PDF">⇩</button><button id="fullscreenBtn" class="icon-btn" title="Tela cheia" aria-label="Tela cheia">⛶</button><button id="readerCloseTop" class="icon-btn reader-close" title="Fechar leitor" aria-label="Fechar leitor">×</button></div></header>
+    <div class="reader-main"><button id="prevPageSide" class="page-arrow prev" aria-label="Página anterior">‹</button><div class="book-workspace"><div id="book" class="book"><div id="pageLeft" class="paper paper-left"><div class="paper-content" id="leftContent"><span class="blank-decoration">✦</span></div></div><div id="pageRight" class="paper paper-right"><div class="paper-content" id="rightContent"></div></div><div class="book-spine"></div><div class="turn-layer" id="turnLayer" aria-hidden="true"></div></div><div id="loadingReader" class="reader-loading" hidden>Preparando páginas...</div></div><button id="nextPageSide" class="page-arrow next" aria-label="Próxima página">›</button></div>
+    <footer class="reader-footer"><div class="reader-nav"><button id="prevPage" class="btn btn-outline">← Anterior</button><label class="page-jump"><span>Página</span><input id="jumpPage" type="number" min="1" value="1" aria-label="Ir para página"><span>de <b id="totalPages">—</b></span></label><button id="nextPage" class="btn btn-outline">Próxima →</button></div><div class="zoom-controls"><button id="zoomOut" class="icon-btn" title="Reduzir zoom" aria-label="Reduzir zoom">−</button><span id="zoomValue">100%</span><button id="zoomIn" class="icon-btn" title="Ampliar zoom" aria-label="Ampliar zoom">＋</button></div></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
