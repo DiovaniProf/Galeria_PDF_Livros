@@ -14,7 +14,7 @@
   <div class="site-bg" aria-hidden="true"></div>
   <div id="app" class="shell">
     <header class="topbar">
-      <a class="brand" href="#biblioteca" aria-label="Biblioteca Digital, página inicial"><span class="brand-mark">◈</span><span>BIBLIOTECA <b>DIGITAL</b><small>IMERSIVA · VERSÃO 1.0</small></span></a>
+      <a class="brand" href="#biblioteca" aria-label="Biblioteca Digital, página inicial"><span class="brand-mark">◈</span><span>BIBLIOTECA <b>DIGITAL</b><small>IMERSIVA · VERSÃO 2.0</small></span></a>
       <nav class="topnav" aria-label="Navegação principal">
         <button class="nav-btn active" data-view="biblioteca">⌂ <span>Biblioteca</span></button>
         <button class="nav-btn" data-view="gerador">✦ <span>Gerar livro</span></button>
@@ -48,15 +48,47 @@
           <form id="bookForm" class="panel form-panel">
             <div class="panel-heading"><span class="step">01</span><div><h2>Informações do livro</h2><p>Identificação e organização do material</p></div></div>
             <div class="field"><label for="titleInput">Título do livro <strong>*</strong></label><input id="titleInput" maxlength="120" placeholder="Ex.: Introdução à Filosofia" required></div>
-            <div class="field-row"><div class="field"><label for="authorInput">Autor / responsável</label><input id="authorInput" maxlength="100" placeholder="Nome do autor"></div><div class="field"><label for="categoryInput">Categoria <strong>*</strong></label><input id="categoryInput" list="categorySuggestions" maxlength="60" placeholder="Ex.: Filosofia" required><datalist id="categorySuggestions"><option value="Filosofia"><option value="Literatura"><option value="Ciências Humanas"><option value="Linguagens e Códigos"><option value="Matemática"><option value="Ciências da Natureza"><option value="Educação Digital"><option value="Formação Continuada"><option value="Práticas Educacionais"></datalist></div></div>
+            <div class="field-row"><div class="field"><label for="authorInput">Autor / responsável</label><input id="authorInput" maxlength="100" placeholder="Nome do autor"></div><div class="field"><label for="categoryInput">Categoria <strong>*</strong></label><select id="categoryInput" required>
+<option value="" disabled selected>Selecione uma categoria</option>
+<option value="Administração">Administração</option>
+<option value="Arte">Arte</option>
+<option value="Biografia">Biografia</option>
+<option value="Cidadania Digital">Cidadania Digital</option>
+<option value="Ciências Humanas">Ciências Humanas</option>
+<option value="Ciências Naturais">Ciências Naturais</option>
+<option value="Ciências Sociais">Ciências Sociais</option>
+<option value="Cinema">Cinema</option>
+<option value="Contabilidade">Contabilidade</option>
+<option value="Educação">Educação</option>
+<option value="Gestão de Pessoas">Gestão de Pessoas</option>
+<option value="Inteligência Artificial">Inteligência Artificial</option>
+<option value="Linguagens e Códigos">Linguagens e Códigos</option>
+<option value="Literatura">Literatura</option>
+<option value="Matemática e Tecnologia">Matemática e Tecnologia</option>
+<option value="Mentoria">Mentoria</option>
+<option value="Música">Música</option>
+<option value="Oficina de Escrita">Oficina de Escrita</option>
+<option value="Psicologia">Psicologia</option>
+<option value="Religião">Religião</option>
+<option value="Saúde">Saúde</option>
+<option value="Tecnologia">Tecnologia</option>
+</select></div></div>
             <div class="field"><label for="descriptionInput">Descrição</label><textarea id="descriptionInput" rows="3" maxlength="500" placeholder="Uma apresentação breve do conteúdo"></textarea></div>
             <div class="panel-heading sub-heading"><span class="step">02</span><div><h2>Arquivos do livro</h2><p>O PDF será interpretado pelo leitor digital</p></div></div>
-            <div class="uploads"><label class="upload-box" id="pdfDrop"><input id="pdfInput" type="file" accept="application/pdf,.pdf"><span class="upload-icon">▤</span><b>Selecionar PDF <strong>*</strong></b><small id="pdfFileLabel">Clique ou arraste seu documento</small><span class="upload-foot">Arquivo .pdf</span></label><label class="upload-box" id="coverDrop"><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp"><span class="upload-icon">▧</span><b>Capa personalizada</b><small id="coverFileLabel">Clique ou arraste uma imagem</small><span class="upload-foot">JPG, PNG ou WebP · opcional</span></label></div>
+            <div class="field cover-format-field">
+<label for="coverRatio">Formato de exibição da capa <strong>*</strong></label>
+<div class="ratio-selector" role="group" aria-label="Proporção da capa">
+<label class="ratio-option"><input type="radio" name="coverRatio" value="9:16" checked><span class="ratio-icon portrait"></span><span><b>9:16 — Vertical</b><small>Ideal para capas de livros</small></span></label>
+<label class="ratio-option"><input type="radio" name="coverRatio" value="16:9"><span class="ratio-icon landscape"></span><span><b>16:9 — Horizontal</b><small>Ideal para apostilas e materiais</small></span></label>
+</div>
+<p class="ratio-help">A imagem será enquadrada integralmente, sem cortes. A escolha também será aplicada à galeria.</p>
+</div>
+<div class="uploads"><label class="upload-box" id="pdfDrop"><input id="pdfInput" type="file" accept="application/pdf,.pdf"><span class="upload-icon">▤</span><b>Selecionar PDF <strong>*</strong></b><small id="pdfFileLabel">Clique ou arraste seu documento</small><span class="upload-foot">Arquivo .pdf</span></label><label class="upload-box" id="coverDrop"><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp"><span class="upload-icon">▧</span><b>Capa personalizada</b><small id="coverFileLabel">Clique ou arraste uma imagem</small><span class="upload-foot">JPG, PNG ou WebP · opcional</span></label></div>
             <label class="check-option"><input id="downloadInput" type="checkbox" checked><span>Permitir que o leitor baixe o PDF original</span></label>
             <div class="form-actions"><button type="button" id="cancelEdit" class="btn btn-outline">Cancelar</button><button type="submit" id="saveBook" class="btn btn-primary">✦ Publicar na biblioteca</button></div>
             <div class="form-hint">ℹ Esta versão salva os livros neste navegador, usando IndexedDB. Para compartilhar o acervo entre dispositivos, será necessário integrar armazenamento remoto.</div>
           </form>
-          <aside class="panel preview-panel"><div class="panel-heading"><span class="step">03</span><div><h2>Prévia da publicação</h2><p>Como seu livro aparecerá na galeria</p></div></div><div class="preview-stage"><div id="previewCover" class="preview-cover"><div class="cover-placeholder"><span>✦</span><b>SEU LIVRO</b><small>CAPA PERSONALIZADA</small></div></div></div><div class="preview-meta"><span id="previewCategory">CATEGORIA</span><h3 id="previewTitle">Título do livro</h3><p id="previewAuthor">Autor / responsável</p></div><div class="preview-tip">Dica: para capas elegantes, utilize imagens verticais na proporção 2:3 (por exemplo, 1200 × 1800 px).</div></aside>
+          <aside class="panel preview-panel"><div class="panel-heading"><span class="step">03</span><div><h2>Prévia da publicação</h2><p>Como seu livro aparecerá na galeria</p></div></div><div class="preview-stage"><div id="previewCover" class="preview-cover"><div class="cover-placeholder"><span>✦</span><b>SEU LIVRO</b><small>CAPA PERSONALIZADA</small></div></div></div><div class="preview-meta"><span id="previewCategory">CATEGORIA</span><h3 id="previewTitle">Título do livro</h3><p id="previewAuthor">Autor / responsável</p></div><div class="preview-tip">Capa 9:16: 1080 × 1920 px. Capa 16:9: 1920 × 1080 px. A imagem inteira será preservada, sem recortes.</div></aside>
         </div>
       </section>
     </main>

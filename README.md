@@ -33,3 +33,12 @@ Envie `index.html`, `styles.css` e `app.js` para a raiz do repositório e ative 
 - `app.js`: cadastro, IndexedDB, galeria, PDF.js, navegação e efeito de folheamento
 
 © Projeto demonstrativo educacional.
+
+
+## Alterações V2.0
+- Tipografia ampliada em toda a plataforma e controles, incluindo telas pequenas.
+- Proporção da capa selecionável: 9:16 (vertical) ou 16:9 (horizontal).
+- Proporção salva em cada registro do IndexedDB, preservada durante edição e refletida na galeria e na prévia.
+- Imagens da capa são exibidas por completo (object-fit: contain, sem recortes).
+- Categoria obrigatoriamente escolhida em lista suspensa com 23 opções alfabéticas (Cinema sem duplicação, Música corrigida).
+- Livros cadastrados na V1 permanecem disponíveis na V2 no mesmo domínio e navegador; adotam capa vertical 9:16 se editados sem formato anterior.
