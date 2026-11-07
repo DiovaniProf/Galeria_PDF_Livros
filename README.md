@@ -1,3 +1,17 @@
+# Biblioteca Digital Imersiva — V5.2 (correção de renderização)
+
+Esta versão corrige condições de concorrência na renderização de páginas com PDF.js,
+serializa tarefas gráficas, limita imagens excessivamente grandes e mostra detalhes
+úteis quando houver erro. Preserva os livros e diários salvos no mesmo navegador.
+
+**Instalação:** substitua todos os arquivos do site pelos deste pacote e faça
+uma atualização forçada (Ctrl+F5) no navegador. Mantenha os cinco arquivos JS/HTML/CSS
+na mesma pasta. Não limpe os dados do site, pois a biblioteca local usa IndexedDB.
+
+**Atenção:** não foi possível executar teste completo da interface em navegador
+neste ambiente. Se o erro persistir, registre a mensagem detalhada e o modo de leitura
+para identificar problemas específicos do PDF ou do navegador.
+
 # Biblioteca Digital Imersiva — versão 4.0
 
 ## Instalação

@@ -112,7 +112,7 @@ async function makeExtraPage(num,thumb,token){
   const natural=page.getViewport({scale:1});const maxWidth=thumb?190:880;
   const scale=maxWidth/natural.width, pixel=Math.min(devicePixelRatio||1,2);
   const vp=page.getViewport({scale:scale*pixel});const c=document.createElement('canvas');c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);c.style.width=(vp.width/pixel)+'px';c.style.height=(vp.height/pixel)+'px';
-  await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;if(token!==reading.extraToken)return null;
+  const complete=await renderPdfCanvas(page,c,vp,()=>token===reading.extraToken&&!!state.pdf);if(!complete)return null;
   area.append(makeLayer(num,c));return box;
 }
 async function renderExtra(){
@@ -128,7 +128,7 @@ async function renderExtra(){
       if(el)area.append(el);
       if(i===state.page)requestAnimationFrame(()=>el?.scrollIntoView({block:'start'}));
     }
-  }catch(e){console.error(e);toast('Erro ao renderizar páginas: '+e.message,true)}finally{if(token===reading.extraToken)$('loadingReader').hidden=true}
+  }catch(e){console.error(e);toast('Erro ao renderizar páginas: '+(e?.message||String(e)).slice(0,170),true)}finally{if(token===reading.extraToken)$('loadingReader').hidden=true}
   notesSchedule();
 }
 function notesListRender(){const area=$('notesList');area.replaceChildren();const items=(reading.record?.entries||[]).slice().sort((a,b)=>a.page-b.page);$('notesCount').textContent=items.length+' registro(s)';for(const n of items){const box=document.createElement('div');box.className='note-entry';const top=document.createElement('div');top.className='note-entry-top';const title=document.createElement('b');title.textContent='Página '+n.page;const actions=document.createElement('div');const go=document.createElement('button');go.type='button';go.textContent='Ir';go.onclick=()=>{state.page=n.page;renderSpread()};const del=document.createElement('button');del.type='button';del.textContent='Excluir';del.onclick=()=>{if(confirm('Excluir esta anotação?')){reading.record.entries=reading.record.entries.filter(x=>x.id!==n.id);notesSchedule();notesListRender()}};actions.append(go,del);top.append(title,actions);const text=document.createElement('p');text.textContent=n.text;box.append(top,text);area.append(box)}}

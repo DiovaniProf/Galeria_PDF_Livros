@@ -32,8 +32,76 @@ function setupDrop(zone,input,type){const node=$(zone),fileInput=$(input);fileIn
 function singlePageMode(){return matchMedia('(max-width: 680px)').matches}
 function pageStartFor(page){if(singlePageMode())return Math.max(1,page);return page===1?1:2+Math.floor((page-2)/2)*2}
 async function openReader(id){const book=state.books.find(b=>b.id===id);if(!book)return;if(!window.pdfjsLib){toast('Não foi possível carregar o PDF.js. Verifique sua conexão com a internet.',true);return}baseCloseReader();state.readerBook=book;state.readerId=id;state.page=1;state.zoom=1;state.loadToken++;$('readerTitle').textContent=book.title;$('readerAuthor').textContent=book.author||book.category;$('readerDownload').hidden=book.download===false;$('reader').hidden=false;document.body.style.overflow='hidden';$('loadingReader').hidden=false;try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const raw=await book.pdf.arrayBuffer();if(state.readerId!==id)return;state.pdf=await pdfjsLib.getDocument({data:new Uint8Array(raw)}).promise;if(state.readerId!==id)return;$('totalPages').textContent=state.pdf.numPages;$('jumpPage').max=state.pdf.numPages;await renderSpread()}catch(err){console.error(err);toast('Não foi possível abrir este PDF. Verifique se o arquivo é válido e não possui senha.',true);closeReader()}finally{$('loadingReader').hidden=true}}
-async function renderPage(pageNumber,container,token){container.replaceChildren();if(!pageNumber||pageNumber>state.pdf.numPages){const blank=document.createElement('span');blank.className='blank-decoration';blank.textContent='✦';container.append(blank);return}const page=await state.pdf.getPage(pageNumber);if(token!==state.loadToken)return;const initial=page.getViewport({scale:1});const availableW=Math.max(container.clientWidth,200),availableH=Math.max(container.clientHeight,200);const ratio=Math.min(availableW/initial.width,availableH/initial.height);const dpr=Math.min(window.devicePixelRatio||1,2);const viewport=page.getViewport({scale:Math.min(ratio*dpr,3)});const canvas=document.createElement('canvas');canvas.width=Math.floor(viewport.width);canvas.height=Math.floor(viewport.height);canvas.style.width=`${viewport.width/dpr}px`;canvas.style.height=`${viewport.height/dpr}px`;const context=canvas.getContext('2d',{alpha:false});await page.render({canvasContext:context,viewport}).promise;if(token!==state.loadToken)return;container.replaceChildren(canvas)}
-async function renderSpread(){if(!state.pdf)return;const token=++state.loadToken;const single=singlePageMode();$('reader').classList.toggle('single-page',single);const start=pageStartFor(state.page);const left=single?null:start===1?null:start;const right=single?state.page:start===1?1:start+1;const leftContent=$('leftContent'),rightContent=$('rightContent');state.page=single?state.page:start;$('jumpPage').value=state.page;$('prevPage').disabled=$('prevPageSide').disabled=state.page<=1;$('nextPage').disabled=$('nextPageSide').disabled=single?state.page>=state.pdf.numPages:right>=state.pdf.numPages;$('zoomValue').textContent=Math.round(state.zoom*100)+'%';$('book').style.setProperty('--scale',String(state.zoom));$('loadingReader').hidden=false;try{await Promise.all([renderPage(left,leftContent,token),renderPage(right,rightContent,token)])}catch(err){console.error(err);toast('Erro ao renderizar uma página do PDF.',true)}finally{if(token===state.loadToken)$('loadingReader').hidden=true}}
+// Controle de concorrência: o PDF.js não deve receber renderizações desordenadas
+// durante navegação, redimensionamento, tela cheia e troca de modos.
+let pdfCanvasQueue=Promise.resolve();
+function renderPdfCanvas(page,canvas,viewport,isCurrent=()=>true){
+  const job=async()=>{
+    if(!isCurrent())return false;
+    const ctx=canvas.getContext('2d',{alpha:false});
+    if(!ctx)throw Error('Não foi possível criar o contexto gráfico da página.');
+    const task=page.render({canvasContext:ctx,viewport});
+    try{await task.promise;return isCurrent()}
+    catch(err){if(!isCurrent() || err?.name==='RenderingCancelledException')return false;throw err}
+  };
+  const result=pdfCanvasQueue.catch(()=>{}).then(job);
+  pdfCanvasQueue=result.then(()=>{},()=>{});
+  return result;
+}
+async function renderPage(pageNumber,container,token){
+  if(token!==state.loadToken||!state.pdf)return;
+  if(!pageNumber||pageNumber>state.pdf.numPages){
+    container.replaceChildren();const blank=document.createElement('span');
+    blank.className='blank-decoration';blank.textContent='✦';container.append(blank);return;
+  }
+  const pdf=state.pdf;
+  const page=await pdf.getPage(pageNumber);
+  if(token!==state.loadToken||pdf!==state.pdf)return;
+  const initial=page.getViewport({scale:1});
+  // A largura e altura vêm do recipiente real, respeitando os monitores e o zoom.
+  const availableW=Math.max(container.clientWidth||200,200);
+  const availableH=Math.max(container.clientHeight||200,200);
+  const ratio=Math.min(availableW/initial.width,availableH/initial.height);
+  let dpr=Math.min(window.devicePixelRatio||1,2);
+  let scale=Math.min(ratio*dpr,3);
+  // Limitar pixels para reduzir falhas em arquivos grandes e computadores escolares.
+  const maxPixels=8_000_000;
+  if(initial.width*initial.height*scale*scale>maxPixels)
+    scale=Math.sqrt(maxPixels/(initial.width*initial.height));
+  const viewport=page.getViewport({scale});
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.floor(viewport.width));
+  canvas.height=Math.max(1,Math.floor(viewport.height));
+  canvas.style.width=`${viewport.width/dpr}px`;
+  canvas.style.height=`${viewport.height/dpr}px`;
+  const ok=await renderPdfCanvas(page,canvas,viewport,()=>token===state.loadToken&&pdf===state.pdf);
+  if(ok)container.replaceChildren(canvas);
+}
+async function renderSpread(){
+  if(!state.pdf)return;
+  const token=++state.loadToken;
+  const single=singlePageMode();$('reader').classList.toggle('single-page',single);
+  const start=pageStartFor(state.page);
+  const left=single?null:start===1?null:start;
+  const right=single?state.page:start===1?1:start+1;
+  state.page=single?state.page:start;
+  $('jumpPage').value=state.page;
+  $('prevPage').disabled=$('prevPageSide').disabled=state.page<=1;
+  $('nextPage').disabled=$('nextPageSide').disabled=single?state.page>=state.pdf.numPages:right>=state.pdf.numPages;
+  $('zoomValue').textContent=Math.round(state.zoom*100)+'%';
+  $('book').style.setProperty('--scale',String(state.zoom));
+  $('loadingReader').hidden=false;
+  try{
+    // Renderização serializada, mesmo quando há duas páginas lado a lado.
+    await renderPage(left,$('leftContent'),token);
+    if(token!==state.loadToken)return;
+    await renderPage(right,$('rightContent'),token);
+  }catch(err){
+    console.error('Falha detalhada ao renderizar PDF:',err);
+    const detail=(err?.message||String(err)).slice(0,180);
+    toast('Erro ao renderizar página: '+detail,true);
+  }finally{if(token===state.loadToken)$('loadingReader').hidden=true}
+}
 async function navigate(delta){if(!state.pdf||state.busy)return;const single=singlePageMode(),step=single?1:state.page===1&&delta>0?1:2;let target;if(single)target=state.page+delta;else if(delta>0)target=state.page===1?2:state.page+2;else target=state.page<=2?1:state.page-2;if(target<1||target>state.pdf.numPages)return;state.busy=true;const book=$('book');book.classList.add(delta>0?'turn-next':'turn-prev');await new Promise(resolve=>setTimeout(resolve,430));state.page=target;book.classList.remove('turn-next','turn-prev');await renderSpread();state.busy=false}
 async function jumpTo(value){if(!state.pdf||state.busy)return;let num=Math.floor(Number(value));if(!Number.isFinite(num)||num<1)num=1;num=Math.min(num,state.pdf.numPages);state.page=num;await renderSpread()}
 function closeReader(){state.loadToken++;state.readerId=null;state.readerBook=null;state.pdf=null;state.busy=false;$('reader').hidden=true;$('book').classList.remove('turn-next','turn-prev');document.body.style.overflow='';if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
